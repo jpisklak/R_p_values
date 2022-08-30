@@ -1,0 +1,195 @@
+---
+title: "Calculating the Probability (a.k.a. *p-value*) of the Test-Statistic using R"
+author: "Jeffrey M. Pisklak"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+- Critical Region ($\alpha = .05$) is shown in blue.  
+- Solid vertical red line is the test-statistic.
+- The probability of a test-statistic (i.e. p-value) is shown in red.
+- Degrees of freedom are set to 4 in all examples.
+
+<br>
+
+## **Two-Tailed Tests**
+
+### 1. If your **test-statistic is negative** (e.g., $T = -1.5$), then you are going to use . . .
+
+```{r echo = TRUE}
+pt(-1.5, df = 4) * 2
+```
+
+```{r echo = FALSE, fig.width = 4, fig.height = 3}
+library(ggplot2)
+x = seq(from = -4, to = 4, by = .001)
+Density = dt(x, df = 4)
+dist_df = data.frame(x, Density)
+
+ggplot(dist_df, aes(x = x, y = Density)) +
+  geom_line(size = 1) +
+  
+  #Title
+  labs(title = "Two-Tailed",
+        subtitle = "E.g., T = -1.5, df = 4") +
+  
+  #Left tail colour
+  geom_ribbon(data = subset(dist_df, x < -1.5), aes(ymax = Density), 
+                ymin = 0, fill = "red", colour = NA, alpha = .5) +
+
+  #Right tail colour
+  geom_ribbon(data = subset(dist_df, x > 1.5), aes(ymax = Density), 
+                ymin = 0, fill = "red", colour = NA, alpha = .5) +
+  
+  geom_vline(xintercept = -1.5, colour = "red", size = 1) +
+  
+  annotate("text", x = -3, y= .25, label = "T = -1.5\np = 0.208") +
+  
+  #Axis Scale
+  scale_x_continuous(name ="t-score", 
+                    breaks = seq(-4, 4, 1) ) +
+
+  #Left tail 95% Threshold
+  geom_ribbon(data = subset(dist_df, x < qt(.05/2, df = 4)), 
+              aes(ymax = Density),
+              ymin = 0, fill = "blue", colour = NA) +
+
+  #Right tail 95% Threshold
+  geom_ribbon(data = subset(dist_df, x > qt(1-.05/2, df = 4)),
+                            aes(ymax = Density),
+              ymin = 0, fill = "blue", colour = NA)
+
+```
+
+<br>
+
+### 2. If your **test-statistic is positive** (e.g., $T = 1.5$), then you are going to use . . .
+
+```{r echo = TRUE}
+pt(1.5, df = 4, lower.tail = FALSE) * 2
+```
+
+```{r echo = FALSE, fig.width = 4, fig.height = 3}
+x = seq(from = -4, to = 4, by = .001)
+Density = dt(x, df = 4)
+dist_df = data.frame(x, Density)
+
+ggplot(dist_df, aes(x = x, y = Density)) +
+  geom_line(size = 1) +
+  
+  #Title
+  labs(title = "Two-Tailed",
+        subtitle = "E.g., T = +1.5, df = 4") +
+  
+  #Left tail colour
+  geom_ribbon(data = subset(dist_df, x < -1.5), aes(ymax = Density), 
+                ymin = 0, fill = "red", colour = NA, alpha = .5) +
+
+  #Right tail colour
+  geom_ribbon(data = subset(dist_df, x > 1.5), aes(ymax = Density), 
+                ymin = 0, fill = "red", colour = NA, alpha = .5) +
+  
+  geom_vline(xintercept = 1.5, colour = "red", size = 1) +
+  
+  annotate("text", x = 3, y= .25, label= "T = +1.5\np = 0.208") +
+  
+  #Axis Scale
+  scale_x_continuous(name ="t-score", 
+                    breaks = seq(-4, 4, 1) ) +
+  
+  #Left tail 95% Threshold
+  geom_ribbon(data = subset(dist_df, x < qt(.05/2, df = 4)),
+              aes(ymax = Density),
+              ymin = 0, fill = "blue", colour = NA) +
+
+  #Right tail 95% Threshold
+  geom_ribbon(data = subset(dist_df, x > qt(1-.05/2, df = 4)),
+              aes(ymax = Density),
+              ymin = 0, fill = "blue", colour = NA)
+
+```
+
+<br>
+
+## **One-tailed tests**
+
+### 3. If your **critical region is in the left tail** (i.e., $H_0 : \mu > x$) then you are going to use . . .
+
+```{r echo = TRUE}
+pt(1.5, df = 4)
+```
+
+```{r echo = FALSE, fig.width = 4, fig.height = 3}
+x = seq(from = -4, to = 4, by = .001)
+Density = dt(x, df = 4)
+dist_df = data.frame(x, Density)
+
+ggplot(dist_df, aes(x = x, y = Density)) +
+  geom_line(size = 1) +
+  
+  #Title
+  labs(title = "Two-Tailed",
+        subtitle = "E.g., T = +1.5, df = 4") +
+  
+  #Left tail colour
+  geom_ribbon(data = subset(dist_df, x < 1.5), aes(ymax = Density), 
+                ymin = 0, fill = "red", colour = NA, alpha = .5) +
+
+  geom_vline(xintercept = 1.5, colour = "red", size = 1) +
+  
+  annotate("text", x = 3, y = .25, label= "T = +1.5\np = 0.896") +
+  
+  #Axis Scale
+  scale_x_continuous(name ="t-score", 
+                    breaks = seq(-4, 4, 1) ) +
+  
+  #Left tail 95% Threshold
+  geom_ribbon(data = subset(dist_df, x < qt(.05, df = 4)), 
+              aes(ymax = Density),
+              ymin = 0, fill = "blue", colour = NA)
+
+```
+
+<br>
+
+### 4. If your **critical region is in the right tail** (i.e., $H_0 : \mu < x$) then you are going to use . . .
+
+```{r echo = TRUE}
+pt(1.5, df = 4, lower.tail = FALSE)
+```
+
+```{r echo = FALSE, fig.width = 4, fig.height = 3}
+x = seq(from = -4, to = 4, by = .001)
+Density = dt(x, df = 4)
+dist_df = data.frame(x, Density)
+
+ggplot(dist_df, aes(x = x, y = Density)) +
+  geom_line(size = 1) +
+  
+  #Title
+  labs(title = "Two-Tailed",
+        subtitle = "E.g., T = +1.5, df = 4") +
+  
+  #Left tail colour
+  geom_ribbon(data = subset(dist_df, x > 1.5), aes(ymax = Density), 
+                ymin = 0, fill = "red", colour = NA, alpha = .5) +
+
+  #Right tail colour
+  #geom_ribbon(data = subset(dist_df, x > 1.5), aes(ymax = Density), 
+   #             ymin = 0, fill = "blue", colour = NA, alpha = .5) +
+  
+  geom_vline(xintercept = 1.5, colour = "red", size = 1) +
+  
+  annotate("text", x = 3, y= .25, label= "T = +1.5\np = 0.104") +
+  
+  #Axis Scale
+  scale_x_continuous(name ="t-score", 
+                    breaks = seq(-4, 4, 1) ) +
+  
+  #Right tail 95% Threshold
+  geom_ribbon(data = subset(dist_df, x > qt(.95, df = 4)), aes(ymax = Density), 
+                ymin = 0, fill = "blue", colour = NA)
+
+```
